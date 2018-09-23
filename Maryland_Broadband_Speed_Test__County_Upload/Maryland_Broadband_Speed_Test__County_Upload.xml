@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><metadata>
+<idinfo>
+<citation>
+<citeinfo>
+<origin/>
+<title>Maryland Broadband Speed Test - County (Upload)</title>
+<onlink>https://geodata.md.gov/imap/rest/services/UtilityTelecom/MD_BroadbandSpeedTest/MapServer/4</onlink>
+</citeinfo>
+</citation>
+<descript>
+<abstract>This is a MD iMAP hosted service layer. Find more information at http://imap.maryland.gov.This layer contains the average upload speed (mbps) per County.Last Updated: UnknownFeature Service Layer Link:https://geodata.md.gov/imap/rest/services/UtilityTelecom/MD_BroadbandSpeedTest/MapServer/4</abstract>
+<purpose>Maryland Broadband Speed Test - County (Upload)</purpose>
+</descript>
+<keywords>
+<theme>
+<themekt>None</themekt>
+<themekey>Broadband</themekey>
+<themekey>Speed</themekey>
+<themekey>Tests</themekey>
+<themekey>Bandwidth</themekey>
+<themekey>Mbps</themekey>
+<themekey>Kbps</themekey>
+<themekey>NTIA</themekey>
+<themekey>National Telecommunications and Information Administration</themekey>
+<themekey>Dynamic</themekey>
+<themekey>Vector</themekey>
+<themekey>WFS</themekey>
+<themekey>WMS</themekey>
+<themekey>Maryland</themekey>
+<themekey>MD iMap</themekey>
+<themekey>KML</themekey>
+</theme>
+</keywords>
+<accconst>None</accconst>
+<useconst>The
+ Spatial Data, and the information therein, (collectively the &amp;quot;Data&amp;quot;) is
+ provided &amp;quot;as is&amp;quot; without warranty of any kind, either expressed, 
+implied, or statutory. The user assumes the entire risk as to quality 
+and performance of the Data. No guarantee of accuracy is granted, nor is
+ any responsibility for reliance thereon assumed. In no event shall the 
+State of Maryland be liable for direct, indirect, incidental, 
+consequential or special damages of any kind. The State of Maryland does
+ not accept liability for any damages or misrepresentation caused by 
+inaccuracies in the Data or as a result to changes to the Data, nor is 
+there responsibility assumed to maintain the Data in any manner or form.
+ The Data can be freely distributed as long as the metadata entry is not
+ modified or deleted. Any data derived from the Data must acknowledge 
+the State of Maryland in the metadata.</useconst>
+<datacred>The Maryland Broadband Mapping Initiative team, led by the Maryland Broadband Cooperative</datacred>
+</idinfo>
+<metainfo>
+<metd>20180216</metd>
+<metc>
+<cntinfo>
+<!--no contact person or organization name available-->
+</cntinfo>
+</metc>
+<metstdn>FGDC Content Standard for Digital Geospatial Metadata</metstdn>
+<metstdv>FGDC-STD-001-1998</metstdv>
+<mettc>local time</mettc>
+</metainfo>
+</metadata>

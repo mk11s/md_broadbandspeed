@@ -1,0 +1,66 @@
+---
+title: "Upload Speeds"
+author: "Marla"
+date: "9/18/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE)
+```
+
+```{r display_load, echo=FALSE, message=F, warning=F}
+library(sf)
+library(dplyr)
+library(DT)
+library(readr)
+library(tigris)
+library(leaflet)
+```
+
+```{r display_code, echo=FALSE, message=F, warning=F}
+#Data Source: geodata.md.gov
+
+broadband <- read_csv("Maryland_Broadband_Speed_Test__County_Upload.csv")
+
+# set sf option, bring in MD counties
+
+options(tigris_class="sf")
+
+md <- counties("MD", cb=T)
+
+#Need to Change Baltimore in this row to Baltimore City, the City was left off
+md[23, 6] <- "Baltimore City"
+
+speed<-broadband %>% 
+  group_by(Ave_Upload) %>% 
+  arrange(desc(`Ave_Upload`))
+
+# Rename a column in R
+colnames(speed)[colnames(speed)=="C0_NAME"] <- "NAME"
+
+#Join average broadband speed to counties df to map
+combined<-right_join(md, speed)
+
+combined<-combined %>% 
+  group_by(Ave_Upload) %>% 
+  arrange(desc(`Ave_Upload`))
+
+#dividing by 1000 to get mbps
+speed_mbps <- round(combined$Ave_Upload/1000,2)
+
+#make it interactive, it needs labels too
+
+combined %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  addPolygons(popup=~NAME)
+
+pal <- colorNumeric("Reds", domain=speed_mbps)
+
+# Setting up the pop up text
+popup_combined <- paste0("Ave Speed: ", as.character(speed_mbps),
+                         "<br>",
+                         "County: ",as.character(combined$NAME) )
+```
+

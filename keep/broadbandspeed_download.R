@@ -1,0 +1,77 @@
+library(sf)
+library(censusapi)
+library(dplyr)
+library(DT)
+library(readr)
+library(tigris)
+library(leaflet)
+library(htmltools)
+
+#Data Source: geodata.md.gov
+
+broadband <- read_csv("Maryland_Broadband_Speed_Test__County_Download.csv")
+
+# set sf option, bring in MD counties
+
+options(tigris_class="sf")
+
+md <- counties("MD", cb=T)
+
+#Need to Change Baltimore in this row to Baltimore City, the City was left off
+md[23, 6] <- "Baltimore City"
+
+speed<-broadband %>% 
+  group_by(Ave_Upload) %>% 
+  arrange(desc(`Ave_Upload`))
+
+# Rename a column in R
+colnames(speed)[colnames(speed)=="C0_NAME"] <- "NAME"
+
+#Join average broadband speed to counties df to map
+combined<-right_join(md, speed)
+
+combined<-combined %>% 
+  group_by(Ave_Upload) %>% 
+  arrange(desc(`Ave_Upload`))
+
+
+#dividing by 1000 to get mbps
+speed_mbps <- round(combined$Ave_Upload/1000,2)
+
+#make it interactive, it needs labels too
+
+combined %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  addPolygons(popup=~NAME)
+
+pal <- colorNumeric("Greens", domain=speed_mbps)
+
+# Setting up the pop up text
+popup_combined <- paste0("Ave Speed: ", as.character(speed_mbps),
+                         "<br>",
+                         "County: ",as.character(combined$NAME) )
+
+# Mapping it with the new tiles CartoDB.Positron
+leaflet() %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  setView(-76.657289, 39.514800, zoom =9) %>% 
+  addPolygons(data = combined, 
+              fillColor = ~pal(speed_mbps), 
+              fillOpacity = 0.7, 
+              weight = 0.2, 
+              smoothFactor = 0.2, 
+              highlight = highlightOptions(
+                weight = 5,
+                color = "#777",
+                fillOpacity = 0.7,
+                bringToFront = TRUE),
+              popup=~popup_combined,
+              labelOptions = labelOptions(
+                style = list("font-weight" = "normal", padding = "3px 8px"),
+                textsize = "15px",
+                direction = "desc"))  %>%
+              addLegend(pal = pal, 
+                        values = speed_mbps, 
+                        position = "bottomright", 
+                        title = "Download Speeds (mbps)")

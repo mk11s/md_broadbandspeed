@@ -1,0 +1,199 @@
+---
+title: "Average Broadband Upload and Download Speeds (mbps) in Maryland by County"
+output:
+  html_document: 
+    toc: true
+    toc_float: true
+---
+This was produced for Introduction to R for Journalists, taught by Andrew Ba Tran
+
+The data source is the Maryland open data website: http://data-maryland.opendata.arcgis.com/datasets/maryland::maryland-broadband-speed-test-county-upload?geometry=-84.085%2C37.301%2C-70.264%2C40.297
+
+#Average Broadband Upload Speeds (mbps) in Maryland by County
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+```{r display_load, echo=F, message=F, warning=F}
+library(sf)
+library(dplyr)
+library(DT)
+library(readr)
+library(tigris)
+library(leaflet)
+library(ggplot2)
+library(forcats)
+library(ggthemes)
+```
+```{r display_code, message=F, warning=F, include=FALSE}
+#Data Source: geodata.md.gov, let's start with upload speeds
+
+broadband <- read_csv("raw_data/Maryland_Broadband_Speed_Test__County_Upload.csv")
+
+# set sf option, bring in MD counties
+
+options(tigris_class="sf")
+
+md <- counties("MD", cb=T)
+
+#Need to Change Baltimore in this row to Baltimore City, the City was left off
+md[23, 6] <- "Baltimore City"
+
+speed<-broadband %>% 
+  group_by(Ave_Upload) %>% 
+  arrange(desc(`Ave_Upload`))
+
+# Rename a column in R
+colnames(speed)[colnames(speed)=="C0_NAME"] <- "NAME"
+
+#Join average broadband speed to counties df to map
+combined<-right_join(md, speed)
+
+combined<-combined %>% 
+  group_by(Ave_Upload) %>% 
+  arrange(desc(`Ave_Upload`))
+
+#dividing by 1000 to get mbps
+speed_mbps <- round(combined$Ave_Upload/1000,2)
+
+#make it interactive, it needs labels too
+pal <- colorNumeric("Blues", domain=speed_mbps)
+
+# Setting up the pop up text
+popup_combined <- paste0("Ave Speed: ", as.character(speed_mbps),
+                         "<br>",
+                         "County: ",as.character(combined$NAME) )
+```
+```{r display_map, echo=F, message=F, warning=F}
+
+# Mapping it with the new tiles CartoDB.Positron
+leaflet() %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  setView(-76.657289, 39.514800, zoom =8) %>% 
+  addPolygons(data = combined, 
+              fillColor = ~pal(speed_mbps), 
+              fillOpacity = 0.7, 
+              weight = 0.2, 
+              smoothFactor = 0.2, 
+              highlight = highlightOptions(
+                weight = 5,
+                color = "#777",
+                fillOpacity = 0.7,
+                bringToFront = TRUE),
+              popup=~popup_combined,
+              labelOptions = labelOptions(
+                style = list("font-weight" = "normal", padding = "3px 8px"),
+                textsize = "15px",
+                direction = "desc"))  %>%
+              addLegend(pal = pal, 
+                        values = speed_mbps, 
+                        position = "bottomright", 
+                        title = "Upload Speeds (mbps)")  
+```
+
+This code can be reproduced to map download speeds as well.
+
+Talk about reproducible, this took about 5 minutes ..  if that long Just replace Upload with Download in the code. The Download dataset was strucured exactly the same as Upload, with that one change in column name. 
+
+###Average Broadband Download Speeds (mbps) in Maryland by County
+
+```{r display_downloadspeeds, message=F, warning=F, include=FALSE}
+#Data Source: geodata.md.gov
+
+broadband <- read_csv("raw_data/Maryland_Broadband_Speed_Test__County_Download.csv")
+
+# set sf option, bring in MD counties
+
+options(tigris_class="sf")
+
+md <- counties("MD", cb=T)
+
+#Need to Change Baltimore in this row to Baltimore City, the City was left off
+md[23, 6] <- "Baltimore City"
+
+speed<-broadband %>% 
+  group_by(Ave_Download) %>% 
+  arrange(desc(`Ave_Download`))
+
+# Rename a column in R
+colnames(speed)[colnames(speed)=="C0_NAME"] <- "NAME"
+
+#Join average broadband speed to counties df to map
+combined<-right_join(md, speed)
+
+combined<-combined %>% 
+  group_by(Ave_Download) %>% 
+  arrange(desc(`Ave_Download`))
+
+#dividing by 1000 to get mbps
+speed_mbps <- round(combined$Ave_Download/1000,2)
+
+#make it interactive, it needs labels too
+pal <- colorNumeric("Greens", domain=speed_mbps)
+
+# Setting up the pop up text
+popup_combined <- paste0("Ave Speed: ", as.character(speed_mbps),
+                         "<br>",
+                         "County: ",as.character(combined$NAME) )
+```
+```{r display_downloadmap, echo=F, message=F, warning=F}
+
+# Mapping it with the new tiles CartoDB.Positron
+leaflet() %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  setView(-76.657289, 39.514800, zoom =8) %>% 
+  addPolygons(data = combined, 
+              fillColor = ~pal(speed_mbps), 
+              fillOpacity = 0.7, 
+              weight = 0.2, 
+              smoothFactor = 0.2, 
+              highlight = highlightOptions(
+                weight = 5,
+                color = "#777",
+                fillOpacity = 0.7,
+                bringToFront = TRUE),
+              popup=~popup_combined,
+              labelOptions = labelOptions(
+                style = list("font-weight" = "normal", padding = "3px 8px"),
+                textsize = "15px",
+                direction = "desc"))  %>%
+              addLegend(pal = pal, 
+                        values = speed_mbps, 
+                        position = "bottomright", 
+                        title = "Download Speeds (mbps)")  
+```
+
+###Bar Chart of Average Upload Speed
+
+```{r download_speeds, echo=F, message=F, warning=F}
+speed <- read_csv("raw_data/Maryland_Broadband_Speed_Test__County_Upload.csv")
+
+speed_mbps <- round(speed$Ave_Upload/1000,2)
+
+#reorder the y axis
+
+ggplot(speed,
+       aes(x=fct_reorder(C0_NAME, Ave_Upload, desc=TRUE), y=Ave_Upload)) +
+  geom_bar(stat="identity")+
+  coord_flip()+
+  labs(x="MD County", y="Average Upload Speed (mbps)", 
+       title = "Average Broadband Upload Speeds in Maryland by County",
+       subtitle = "for R for Journalists class",
+       caption = "Data from geodata.md.gov") +
+  theme(panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(), 
+        axis.line = element_blank(),
+        axis.text.x = element_blank())+ 
+  theme_economist() +
+  scale_colour_economist()
+```
+
+###What is a good download speed anyway? 
+
+Here's an article with a chart for some context:
+https://www.nerdwallet.com/blog/utilities/how-to-decide-what-internet-speed-you-need/ 
